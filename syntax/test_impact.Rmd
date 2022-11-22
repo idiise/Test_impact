@@ -1,0 +1,113 @@
+---
+title: "REACH Data Unit Officer Test"
+author: "Idrissa Dabo"
+date: "2022-11-22"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(writexl)
+library(expss)
+```
+
+## REACH Data Unit Officer Test
+
+This test includes three parts, 1. General Knowledge, 2. Data Processing and 3. Coding and dashboard creation. Use the spreadsheets Annex 1 to help you answer the questions below.
+The test has been designed to take 2 hours and 30 minutes and examines several competencies regarding data analysis. Read all questions before you begin and note that the three parts can be completed in any order. Aim to attempt every section, but note that we would prefer high quality answers to a few questions (at least one per part), rather than a rushed attempt at all of them. When sending back your answers, please share all scripts, code, files etc. that you used to solve the exercises. Please also list all websites/external sources you used to answer the questions.
+All answers can be noted directly on this answer sheet unless otherwise specified. Please return this document with you answers, together with Annex 1 by email. 
+
+
+### Part 1: General Knowledge
+
+1. Explain p-values in layman terms. Feel free to use analogies or examples. Keep it simple, but make sure to stay technically accurate. 
+
+  a.	Why are they important?
+ 
+  b.	How can they be interpreted?
+ 
+  c.	What are some common pitfalls/misunderstandings in their use and interpretation? 
+
+2.	When would a Mosaic plot be an appropriate visualization? 
+
+3.	What is personally identifiable information (PII)? Provide an example. When is it ok to collect PII? 
+
+
+### Part 2: Data processing 
+
+In the spreadsheet Annex 1, you will find a raw dataset from a recent data collection exercise that was carried out by your team.
+
+1.	There are errors in the dataset. Please identify at least four errors by highlighting them in yellow in the excel sheets. In the cleaning log tab, report the cell IDs, variable name and a small explanation on why do you think this value can be an error in the comment column.
+
+
+
+2.	Using the programming language of R, create a new variable characterizing the household drinking water source into improved / unimproved source following the classification below. Paste the code / function you used below.
+![](C:/Users/USER MSI/Documents/R Project/Test_impact/categorization.PNG)
+
+
+```{r}
+dataset <- read.csv("C:/Users/USER MSI/Documents/R Project/Test_impact/Data/Annex  1 - REACH Assessment Test Database_DataAnalyst_v2.csv")
+
+#  check if the total household number is ok
+dataset <- dataset %>% mutate(
+  total_calculated = Number.household.member.boy.under5.years.old +
+    Number.household.member._girl_under5.years.old + 
+    Number.household.member.boy_5_17.years.old +
+    number.adult.household.members.years.old +
+    household_girl_5_17
+)
+
+dataset <- dataset %>% mutate(
+  total_check = case_when(
+    total_calculated == Total.household.number ~ "ok",
+    TRUE ~ "not ok"
+  )
+)
+
+# extract row with error in the total number of household
+
+total_different <- dataset %>% filter(
+  total_check == "not ok"
+)
+# write_xlsx(total_different, "Data/total_different.xlsx")
+
+# check household with no source of drinking water
+no_source <- dataset %>% filter(is.na(drinking_water_source))
+# write_xlsx(no_source, "Data/no_source.xlsx")
+
+
+```
+ * in the file total different you will see households with a error in the total and also negative value in some column such as (number.adult.household.members.years.old)
+
+  * it is impossible to have households without water sources to drink. So I'm going to remove those households (in the no_source excel sheet) and continue with those who have this information.
+
+
+```{r, warning=FALSE}
+# dataset <- read.csv("C:/Users/USER MSI/Documents/R Project/Test_impact/Data/Annex  1 - REACH Assessment Test Database_DataAnalyst_v2.csv")
+# names(dataset)
+dataset <- dataset[-c(is.na(dataset$drinking_water_source)),]
+dataset <- dataset %>% mutate(
+  drinking_water_source_categorization = case_when(
+    drinking_water_source == "Cart with small tank or drum" ~ "Unimproved water source",
+    drinking_water_source == "Protected dug well" ~ "Improved water source",
+    drinking_water_source == "Piped water to yard or plot" ~ "Improved water source",
+    drinking_water_source == "Piped water into dwelling (house)" ~ "Improved water source",
+    drinking_water_source == "Bottled water" ~ "Improved water source",
+    drinking_water_source == "Tube well or borehole" ~ "Improved water source",
+    drinking_water_source == "Public tap or standpipe" ~ "Improved water source",
+    drinking_water_source == "Protected spring" ~ "Improved water source",
+    drinking_water_source == "Unprotected dug well" ~ "Unimproved water source",
+    drinking_water_source == "Unprotected spring" ~ "Unimproved water source",
+    drinking_water_source == "Other" ~ "Unimproved water source",
+    drinking_water_source == "Surface water" ~ "Unimproved water source",
+    drinking_water_source == "Tanker-truck" ~ "Unimproved water source",
+    drinking_water_source == "Rainwater collection" ~ "Unimproved water source"
+
+  )
+)
+
+funModeling::freq(dataset, "drinking_water_source_categorization")
+
+```
+
