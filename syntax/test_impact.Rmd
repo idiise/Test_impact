@@ -24,10 +24,16 @@ All answers can be noted directly on this answer sheet unless otherwise specifie
 1. Explain p-values in layman terms. Feel free to use analogies or examples. Keep it simple, but make sure to stay technically accurate. 
 
   a.	Why are they important?
+  
+  The p-values are important because they can constitute a confidence threshold and thus facilitate the interpretation of the coefficients in an econometric forecasting model or in a statistical test   
  
   b.	How can they be interpreted?
+  
+  They can be interpreted as confidence level threshold or percentage of error
  
   c.	What are some common pitfalls/misunderstandings in their use and interpretation? 
+  
+  The most frequent error is the confusion depending on whether it is considered as confidence level and error rate. for example with a P-value of 5% one can interpret with a confidence level of 95% or a percentage error of 5%. 
 
 2.	When would a Mosaic plot be an appropriate visualization? 
 
@@ -108,6 +114,27 @@ dataset <- dataset %>% mutate(
 )
 
 funModeling::freq(dataset, "drinking_water_source_categorization")
+
+```
+
+3.	This exercise requires the results of the previous exercise. Use any tools, statistics and visualizations that you see fit to analyze the questions below regarding how access to improved water sources changed between the baseline (first data collection round) and the endline (second data collection round, after a water improvement project has been implemented). Records for both rounds are in the same dataset; The column “data_collection_round” is “Baseline” for records of the first round, and “Endline” for records from the second round. Please share all code/files used for the analysis.
+
+  a.	Did single headed households receive more/less improvements? (relevant data column: “single_headed_household”)
+```{r}
+check_improve <- dataset %>% cross_rpct(single_headed_household, list(data_collection_round %nest%  drinking_water_source_categorization))
+
+# write_xlsx(check_improve, "Data/check_improve.xlsx")
+
+
+```
+  In the excel sheet check improve the single headed household recevive les imporvement in the second data collection round
+
+  b.	Did the improvements affect cases of diarrhea in children under 5? (relevant data column: “diarrhea_under_5”)
+```{r}
+
+check_improve_diarrhea <- dataset %>% cross_rpct(diarrhea_under_5, list(data_collection_round %nest%  drinking_water_source_categorization))
+
+# write_xlsx(check_improve_diarrhea, "Data/check_improve_diarrhea.xlsx")
 
 ```
 
